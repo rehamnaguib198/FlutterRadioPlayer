@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_radio_player/flutter_radio_player.dart';
-import 'package:flutter_radio_player_example/test_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -32,8 +31,8 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> initRadioService() async {
     try {
-      await _flutterRadioPlayer.init(
-          "Flutter Radio Example", "Live", "http://perseus.shoutca.st:9899/stream?type=http&nocache=1906", "false");
+      await _flutterRadioPlayer.init("Flutter Radio Example", "Live",
+          "http://209.133.216.3:7018/;stream.mp3", "false");
     } on PlatformException {
       print("Exception occurred while trying to register the services.");
     }
@@ -117,9 +116,12 @@ class _MyAppState extends State<MyApp> {
                   builder: (context, snapshot) {
                     return Text(snapshot.data);
                   }),
-              RaisedButton(child: Text("Change URL"), onPressed: () async {
-                _flutterRadioPlayer.setUrl("http://209.133.216.3:7018/;stream.mp3", "false");
-              })
+              RaisedButton(
+                  child: Text("Change URL"),
+                  onPressed: () async {
+                    _flutterRadioPlayer.setUrl(
+                        "http://209.133.216.3:7018/;stream.mp3", "false");
+                  })
             ],
           ),
         ),
@@ -132,9 +134,9 @@ class _MyAppState extends State<MyApp> {
             },
             items: [
               BottomNavigationBarItem(
-                  icon: new Icon(Icons.home), title: new Text('Home')),
+                  icon: new Icon(Icons.home), label: 'Home'),
               BottomNavigationBarItem(
-                  icon: new Icon(Icons.pages), title: new Text('Second Page'))
+                  icon: new Icon(Icons.pages), label: 'Second Page')
             ]),
       ),
     );
