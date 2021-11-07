@@ -10,6 +10,7 @@ import com.google.android.exoplayer2.upstream.DefaultAllocator
 import com.google.android.exoplayer2.util.Assertions
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
+
 //
 //class CustomLoadControl {
 //}
@@ -295,7 +296,7 @@ class CustomLoadControl protected constructor(
                 && allocator.totalBytesAllocated >= targetBufferBytes)
         Log.d("CustomLoadControl:shouldStartPlayback", "bufferedDurationUs:$bufferedDurationUs, shouldStart:$shouldStart")
 
-        return  shouldStart
+        return shouldStart
     }
 
     /**
@@ -314,7 +315,7 @@ class CustomLoadControl protected constructor(
                 targetBufferSize += getDefaultBufferSize(renderers[i].trackType)
             }
         }
-        Log.d("calculateTargetBufferBytes","${Math.max(DEFAULT_MIN_BUFFER_SIZE, targetBufferSize)}")
+        Log.d("calculateTargetBufferBytes", "${Math.max(DEFAULT_MIN_BUFFER_SIZE, targetBufferSize)}")
         return Math.max(DEFAULT_MIN_BUFFER_SIZE, targetBufferSize)
     }
 

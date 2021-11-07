@@ -28,7 +28,7 @@ class CustomControlDispatcher @JvmOverloads constructor(
         /** Returns the rewind increment in milliseconds.  */
         @set:Deprecated("""Create a new instance instead and pass the new instance to the UI component. This
         makes sure the UI gets updated and is in sync with the new values.""") var rewindIncrementMs: Long = CustomControlDispatcher.Companion.DEFAULT_REWIND_MS.toLong()) : ControlDispatcher {
-    private val window: Timeline.Window
+    private val window: Timeline.Window = Timeline.Window()
 
     override fun dispatchSetPlayWhenReady(player: Player, playWhenReady: Boolean): Boolean {
         if (!playWhenReady)
@@ -55,7 +55,7 @@ class CustomControlDispatcher @JvmOverloads constructor(
         timeline.getWindow(windowIndex, window)
         val previousWindowIndex = player.previousWindowIndex
         if (previousWindowIndex != C.INDEX_UNSET
-                && (player.currentPosition <= CustomControlDispatcher.Companion.MAX_POSITION_FOR_SEEK_TO_PREVIOUS
+                && (player.currentPosition <= MAX_POSITION_FOR_SEEK_TO_PREVIOUS
                         || window.isDynamic && !window.isSeekable)) {
             player.seekTo(previousWindowIndex, C.TIME_UNSET)
         } else {
@@ -81,14 +81,14 @@ class CustomControlDispatcher @JvmOverloads constructor(
 
     override fun dispatchRewind(player: Player): Boolean {
         if (isRewindEnabled && player.isCurrentWindowSeekable) {
-            CustomControlDispatcher.Companion.seekToOffset(player, -rewindIncrementMs)
+            seekToOffset(player, -rewindIncrementMs)
         }
         return true
     }
 
     override fun dispatchFastForward(player: Player): Boolean {
         if (isFastForwardEnabled && player.isCurrentWindowSeekable) {
-            CustomControlDispatcher.Companion.seekToOffset(player, fastForwardIncrementMs)
+            seekToOffset(player, fastForwardIncrementMs)
         }
         return true
     }
@@ -143,8 +143,4 @@ class CustomControlDispatcher @JvmOverloads constructor(
      * @param rewindIncrementMs The rewind increment in milliseconds. A non-positive value disables
      * the rewind operation.
      */
-    /** Creates an instance.  */
-    init {
-        window = Timeline.Window()
-    }
 }
