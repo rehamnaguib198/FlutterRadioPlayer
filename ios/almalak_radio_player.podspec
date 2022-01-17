@@ -1,9 +1,9 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint flutter_radio_player.podspec' to validate before publishing.
+# Run `pod lib lint almalak_radio_player.podspec' to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'flutter_radio_player'
+  s.name             = 'almalak_radio_player'
   s.version          = '0.0.1'
   s.summary          = 'A new Flutter plugin.'
   s.description      = <<-DESC

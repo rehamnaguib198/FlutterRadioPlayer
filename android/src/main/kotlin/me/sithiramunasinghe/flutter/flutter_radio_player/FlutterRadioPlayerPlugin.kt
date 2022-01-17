@@ -311,7 +311,7 @@ public class FlutterRadioPlayerPlugin : FlutterPlugin, MethodCallHandler, Activi
         lifecycle.addObserver(object : LifecycleObserver {
             @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
             fun onDestroy() {
-                stop();
+//                stop();
                 logger.info("Stopping foregroundservice since app is about to get destroyed")
             }
         })

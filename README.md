@@ -46,7 +46,7 @@ $ flutter pub get
 ```
 3. Import it
 ```dart
-import 'package:flutter_radio_player/flutter_radio_player.dart';
+import 'package:almalak_radio_player/almalak_radio_player.dart';
 ```
 
 4. Configure it
