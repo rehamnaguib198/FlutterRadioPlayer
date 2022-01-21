@@ -1,26 +1,29 @@
 import Flutter
 import UIKit
 
+var streamLink: String = ""
+var previousStatus: String = ""
+
 public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
-    
+
     private var streamingCore: StreamingCore = StreamingCore()
-    
+
     public static var mEventSink: FlutterEventSink?
     public static var eventSinkMetadata: FlutterEventSink?
-    
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_radio_player", binaryMessenger: registrar.messenger())
         let instance = SwiftFlutterRadioPlayerPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
-        
+
         // register the event channel
         let eventChannel = FlutterEventChannel(name: "flutter_radio_player_stream", binaryMessenger: registrar.messenger())
         eventChannel.setStreamHandler(StatusStreamHandler())
-        
+
         let eventChannelMetadata = FlutterEventChannel(name: "flutter_radio_player_meta_stream", binaryMessenger: registrar.messenger())
         eventChannelMetadata.setStreamHandler(MetaDataStreamHandler())
     }
-    
+
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch (call.method) {
         case "initService":
@@ -31,8 +34,10 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
                 let subTitle = args["subTitle"] as? String,
                 let playWhenReady = args["playWhenReady"] as? String
             {
+                streamLink = streamURL
+
                 streamingCore.initService(streamURL: streamURL, serviceName: appName, secondTitle: subTitle, playWhenReady: playWhenReady)
-                
+
                 NotificationCenter.default.addObserver(self, selector: #selector(onRecieve(_:)), name: Notifications.playbackNotification, object: nil)
                 result(nil)
             }
@@ -85,6 +90,7 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
                 let streamURL = args["streamUrl"] as? String,
                 let playWhenReady = args["playWhenReady"] as? String
             {
+                streamLink = streamURL
                 print("method called to setUrl")
                 streamingCore.setUrl(streamURL: streamURL, playWhenReady: playWhenReady)
             }
@@ -93,12 +99,20 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
             result(nil)
         }
     }
-    
+
     @objc private func onRecieve(_ notification: Notification) {
         // unwrapping optional
         if let playerEvent = notification.userInfo!["status"] {
             print("Notification received with event name: \(playerEvent)")
-            SwiftFlutterRadioPlayerPlugin.mEventSink?(playerEvent)
+            if(previousStatus == "") {
+                previousStatus = "\(playerEvent)"
+            }
+            if("\(playerEvent)" == "flutter_radio_playing" && previousStatus == "flutter_radio_paused") {
+                streamingCore.setUrl(streamURL: streamLink, playWhenReady: "true")
+            } else {
+                SwiftFlutterRadioPlayerPlugin.mEventSink?(playerEvent)
+            }
+            previousStatus = "\(playerEvent)"
         }
         
         if let metaDataEvent = notification.userInfo!["meta_data"] {

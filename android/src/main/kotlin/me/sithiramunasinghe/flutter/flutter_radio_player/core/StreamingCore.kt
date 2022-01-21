@@ -37,6 +37,10 @@ import me.sithiramunasinghe.flutter.flutter_radio_player.R
 import me.sithiramunasinghe.flutter.flutter_radio_player.core.enums.PlaybackStatus
 import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
+import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
+import android.support.v4.media.MediaDescriptionCompat
+import android.os.Bundle
+import android.support.v4.media.MediaMetadataCompat
 
 class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
 
@@ -298,6 +302,18 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
 
         try {
             mediaSessionConnector = MediaSessionConnector(mediaSession)
+            mediaSessionConnector?.setQueueNavigator(object : TimelineQueueNavigator(mediaSession) {
+                override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
+                    val parsedMetadata = IcyMetadata(currentMetadata)
+                    return MediaDescriptionCompat.Builder()
+                            .setTitle("Al Malak Radio")
+                            .setExtras(Bundle().apply {
+                                putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, parsedMetadata.get("title"))
+                                putString(MediaMetadataCompat.METADATA_KEY_ARTIST, parsedMetadata.get("title"))
+                            })
+                            .build()
+                }
+            })
             mediaSessionConnector?.setPlayer(player)
         } catch (error: NoSuchMethodError) {
             // We've had this error: No static method getLooper()Landroid/os/Looper; in class Lcom/google/android/exoplayer2/util/Util; or its super classes (declaration of 'com.google.android.exoplayer2.util.Util' appears in

@@ -105,16 +105,20 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
     }
     
     func setUrl(streamURL: String, playWhenReady: String) -> Void {
-        let streamURLInstance = URL(string: streamURL)
-        avPlayer?.replaceCurrentItem(with: AVPlayerItem(url: streamURLInstance!))
-        
-        if playWhenReady == "true" {
-            self.playWhenReady = true
-            play()
-        } else {
-            self.playWhenReady = false
-            pause()
-        }
+            let metadataOutput = AVPlayerItemMetadataOutput(identifiers: nil)
+            metadataOutput.setDelegate(self, queue: DispatchQueue.main)
+            let streamURLInstance = URL(string: streamURL)
+            avPlayerItem = AVPlayerItem(url: streamURLInstance!)
+            avPlayerItem?.add(metadataOutput)
+            avPlayer?.replaceCurrentItem(with: avPlayerItem)
+
+            if playWhenReady == "true" {
+                self.playWhenReady = true
+                play()
+            } else {
+                self.playWhenReady = false
+                pause()
+            }
     }
     
     private func pushEvent(typeEvent : String = "status", eventName: String) {

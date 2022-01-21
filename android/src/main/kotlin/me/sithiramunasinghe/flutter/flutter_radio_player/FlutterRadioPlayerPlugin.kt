@@ -26,6 +26,8 @@ import me.sithiramunasinghe.flutter.flutter_radio_player.core.StreamingCore
 import me.sithiramunasinghe.flutter.flutter_radio_player.core.enums.PlayerMethods
 import java.util.logging.Logger
 
+var streamLink: String = ""
+var previousStatus: String = ""
 
 /** FlutterRadioPlayerPlugin */
 public class FlutterRadioPlayerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -104,6 +106,7 @@ public class FlutterRadioPlayerPlugin : FlutterPlugin, MethodCallHandler, Activi
             PlayerMethods.SET_URL.value -> {
                 logger.info("Set url invoked")
                 val url = call.argument<String>("streamUrl")!!
+                streamLink = url
                 val playWhenReady = call.argument<String>("playWhenReady")!!
                 setUrl(url, playWhenReady)
             }
@@ -175,6 +178,7 @@ public class FlutterRadioPlayerPlugin : FlutterPlugin, MethodCallHandler, Activi
         logger.info("Mapping method call to player item object")
 
         val url = methodCall.argument<String>("streamURL")
+        streamLink = url!!
         val appName = methodCall.argument<String>("appName")
         val subTitle = methodCall.argument<String>("subTitle")
         val playWhenReady = methodCall.argument<String>("playWhenReady")
@@ -283,8 +287,16 @@ public class FlutterRadioPlayerPlugin : FlutterPlugin, MethodCallHandler, Activi
             if (intent != null) {
                 val returnStatus = intent.getStringExtra("status")
                 logger.info("Received status: $returnStatus")
-                mEventSink?.success(returnStatus)
-
+                if(previousStatus == "") {
+                    previousStatus = returnStatus
+                }
+                if(returnStatus == "flutter_radio_playing" && previousStatus == "flutter_radio_paused") {
+                    logger.info("link is: $streamLink")
+                    setUrl(streamLink, "true")
+                } else {
+                    mEventSink?.success(returnStatus)
+                }
+                previousStatus = returnStatus
             }
         }
     }
