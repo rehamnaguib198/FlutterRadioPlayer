@@ -16,6 +16,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
     private var playerItemContext = 0
     private var commandCenter: MPRemoteCommandCenter?
     private var playWhenReady: Bool = false
+    private var streamLink: String = ""
     
     override init() {
         print("StreamingCore Initializing...")
@@ -26,6 +27,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
         print("Initialing Service...")
         
         print("Stream url: " + streamURL)
+        streamLink = streamURL
         
         let streamURLInstance = URL(string: streamURL)
         
@@ -56,7 +58,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
         item.value(forKeyPath: "value")
         let song: String = (item.value(forKeyPath: "value")!) as! String
         pushEvent(typeEvent: "meta_data", eventName: song)
-        MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyTitle] = song;
+        MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyTitle] = " ";
       }
     }
 
@@ -105,6 +107,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
     }
     
     func setUrl(streamURL: String, playWhenReady: String) -> Void {
+            streamLink = streamURL
             let metadataOutput = AVPlayerItemMetadataOutput(identifiers: nil)
             metadataOutput.setDelegate(self, queue: DispatchQueue.main)
             let streamURLInstance = URL(string: streamURL)
@@ -132,7 +135,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
             commandCenter = MPRemoteCommandCenter.shared()
 
             // build now playing
-            let nowPlayingInfo = [MPMediaItemPropertyArtist: appName, MPMediaItemPropertyTitle: subTitle]
+            let nowPlayingInfo = [MPMediaItemPropertyArtist: (streamLink == "http://almalakradio.out.airtime.pro:8000/almalakradio_a?_ga=2.259920074.1336436179.1510295339-974603170.1506885966") ? "Radio" : "Live", MPMediaItemPropertyTitle: " "]
 
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
             

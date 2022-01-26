@@ -306,10 +306,10 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
                 override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
                     val parsedMetadata = IcyMetadata(currentMetadata)
                     return MediaDescriptionCompat.Builder()
-                            .setTitle("Al Malak Radio")
+                            .setTitle(if (streamUrl == "http://almalakradio.out.airtime.pro:8000/almalakradio_a?_ga=2.259920074.1336436179.1510295339-974603170.1506885966") "Radio" else "Live")
                             .setExtras(Bundle().apply {
-                                putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, parsedMetadata.get("title"))
-                                putString(MediaMetadataCompat.METADATA_KEY_ARTIST, parsedMetadata.get("title"))
+                                putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, " ")
+                                putString(MediaMetadataCompat.METADATA_KEY_ARTIST, " ")
                             })
                             .build()
                 }
