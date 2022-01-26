@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
@@ -34,8 +35,11 @@ class FlutterRadioPlayer {
     });
   }
 
-  Future<bool?> play() async {
-    return await _channel.invokeMethod("play");
+  Future<bool?> play({String? interval}) async {
+    if(interval == null) {
+      return await _channel.invokeMethod("play");
+    }
+    return await _channel.invokeMethod("play ${interval}");
   }
 
   Future<bool?> pause() async {

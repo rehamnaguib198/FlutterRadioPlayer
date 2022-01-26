@@ -25,6 +25,19 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        if(call.method.contains("play ")) {
+            let start = call.method.index(call.method.startIndex, offsetBy: 5)
+            let range = start..<call.method.endIndex
+            let durationString = call.method[range]
+            let duration = Double(durationString)
+            var timer = Timer()
+            timer = Timer.scheduledTimer(timeInterval: duration! * 60, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
+            let status = streamingCore.play()
+            if (status == PlayerStatus.PLAYING) {
+                result(true)
+            }
+            result(false)
+        }
         switch (call.method) {
         case "initService":
             print("method called to start the radio service")
@@ -98,6 +111,10 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
         default:
             result(nil)
         }
+    }
+
+    @objc func timerAction() {
+       streamingCore.pause()
     }
 
     @objc private func onRecieve(_ notification: Notification) {
