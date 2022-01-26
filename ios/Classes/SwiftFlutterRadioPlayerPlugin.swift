@@ -3,6 +3,7 @@ import UIKit
 
 var streamLink: String = ""
 var previousStatus: String = ""
+var timer: Timer = Timer()
 
 public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
 
@@ -30,8 +31,12 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
             let range = start..<call.method.endIndex
             let durationString = call.method[range]
             let duration = Double(durationString)
-            var timer = Timer()
-            timer = Timer.scheduledTimer(timeInterval: duration! * 60, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
+            if(duration == -1){
+                timer.invalidate()
+            } else {
+                timer = Timer()
+                timer = Timer.scheduledTimer(timeInterval: duration! * 60, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
+            }
             let status = streamingCore.play()
             if (status == PlayerStatus.PLAYING) {
                 result(true)
@@ -72,6 +77,7 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
             break
         case "pause":
             print("method called to play from service")
+            timer.invalidate()
             let status = streamingCore.pause()
             if (status == PlayerStatus.IDLE) {
                 result(true)
@@ -80,6 +86,7 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
             break
         case "stop":
             print("method called to stopped from service")
+            timer.invalidate()
             let status = streamingCore.stop()
             if (status == PlayerStatus.STOPPED) {
                 result(true)
