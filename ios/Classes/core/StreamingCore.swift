@@ -9,37 +9,38 @@ import Foundation
 import AVFoundation
 import MediaPlayer
 
+var timer: Timer = Timer()
 class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
-    
+
     private var avPlayer: AVPlayer?
     private var avPlayerItem: AVPlayerItem?
     private var playerItemContext = 0
     private var commandCenter: MPRemoteCommandCenter?
     private var playWhenReady: Bool = false
     private var streamLink: String = ""
-    
+
     override init() {
         print("StreamingCore Initializing...")
     }
-    
+
     func initService(streamURL: String, serviceName: String, secondTitle: String, playWhenReady: String) -> Void {
-        
+
         print("Initialing Service...")
-        
+
         print("Stream url: " + streamURL)
         streamLink = streamURL
-        
+
         let streamURLInstance = URL(string: streamURL)
-        
+
         // Setting up AVPlayer
         avPlayerItem = AVPlayerItem(url: streamURLInstance!)
         avPlayer = AVPlayer(playerItem: avPlayerItem!)
-        
+
         //Listener for metadata from streaming
         let metadataOutput = AVPlayerItemMetadataOutput(identifiers: nil)
         metadataOutput.setDelegate(self, queue: DispatchQueue.main)
         avPlayerItem?.add(metadataOutput)
-        
+
         if playWhenReady == "true" {
             print("PlayWhenReady: true")
             self.playWhenReady = true
@@ -47,11 +48,11 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
 
         // initialize player observers
         initPlayerObservers()
-        
+
         // init Remote protocols.
         initRemoteTransportControl(appName: serviceName, subTitle: secondTitle);
     }
-    
+
     func metadataOutput(_ output: AVPlayerItemMetadataOutput, didOutputTimedMetadataGroups groups: [AVTimedMetadataGroup], from track: AVPlayerItemTrack?) {
       if let item = groups.first?.items.first // make this an AVMetadata item
       {
@@ -62,26 +63,33 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
       }
     }
 
-    func play() -> PlayerStatus {
+    func play(duration: Double = -1) -> PlayerStatus {
         print("invoking play method on service")
         if(!isPlaying()) {
+            if(duration == -1 ) {
+                timer.invalidate()
+            } else if (duration != -1) {
+                timer = Timer()
+                timer = Timer.scheduledTimer(timeInterval: duration * 60, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
+            }
             avPlayer?.play()
             pushEvent(eventName: Constants.FLUTTER_RADIO_PLAYING)
         }
-        
+
         return PlayerStatus.PLAYING
     }
-    
+
     func pause() -> PlayerStatus {
         print("invoking pause method on service")
         if (isPlaying()) {
+            timer.invalidate()
             avPlayer?.pause()
             pushEvent(eventName: Constants.FLUTTER_RADIO_PAUSED)
         }
-        
+
         return PlayerStatus.PAUSE
     }
-    
+
     func stop() -> PlayerStatus {
         print("invoking stop method on service")
         if (isPlaying()) {
@@ -90,22 +98,22 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
             avPlayerItem = nil
             commandCenter = nil
         }
-        
+
         return PlayerStatus.STOPPED
     }
-    
+
     func isPlaying() -> Bool {
         let status = (avPlayer?.rate != 0 && avPlayer?.error == nil) ? true : false
         print("isPlaying status: \(status)")
         return status
     }
-    
+
     func setVolume(volume: NSNumber) -> Void {
         let formattedVolume = volume.floatValue;
         print("Setting volume to: \(formattedVolume)")
         avPlayer?.volume = formattedVolume
     }
-    
+
     func setUrl(streamURL: String, playWhenReady: String) -> Void {
             streamLink = streamURL
             let metadataOutput = AVPlayerItemMetadataOutput(identifiers: nil)
@@ -122,6 +130,10 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
                 self.playWhenReady = false
                 pause()
             }
+    }
+
+    @objc func timerAction() {
+       pause()
     }
     
     private func pushEvent(typeEvent : String = "status", eventName: String) {

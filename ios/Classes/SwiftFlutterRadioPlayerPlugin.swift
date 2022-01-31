@@ -3,7 +3,6 @@ import UIKit
 
 var streamLink: String = ""
 var previousStatus: String = ""
-var timer: Timer = Timer()
 
 public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
 
@@ -37,7 +36,7 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
                 timer = Timer()
                 timer = Timer.scheduledTimer(timeInterval: duration! * 60, target: self, selector: #selector(timerAction), userInfo: nil, repeats: true)
             }
-            let status = streamingCore.play()
+            let status = streamingCore.play(duration: duration!)
             if (status == PlayerStatus.PLAYING) {
                 result(true)
             }
@@ -69,6 +68,7 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
             }
         case "play":
             print("method called to play from service")
+            timer.invalidate()
             let status = streamingCore.play()
             if (status == PlayerStatus.PLAYING) {
                 result(true)
@@ -138,12 +138,12 @@ public class SwiftFlutterRadioPlayerPlugin: NSObject, FlutterPlugin {
             }
             previousStatus = "\(playerEvent)"
         }
-        
+
         if let metaDataEvent = notification.userInfo!["meta_data"] {
             print("Notification received with metada: \(metaDataEvent)")
             SwiftFlutterRadioPlayerPlugin.eventSinkMetadata?(metaDataEvent as! String)
         }
-        
+
     }
 }
 
@@ -154,7 +154,7 @@ class StatusStreamHandler: NSObject, FlutterStreamHandler {
         SwiftFlutterRadioPlayerPlugin.mEventSink = events
         return nil;
     }
-    
+
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         SwiftFlutterRadioPlayerPlugin.mEventSink = nil
         return nil;
@@ -166,7 +166,7 @@ class MetaDataStreamHandler: NSObject, FlutterStreamHandler {
         SwiftFlutterRadioPlayerPlugin.eventSinkMetadata = events
         return nil;
     }
-    
+
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         SwiftFlutterRadioPlayerPlugin.eventSinkMetadata = nil
         return nil;
