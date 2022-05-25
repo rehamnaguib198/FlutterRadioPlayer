@@ -147,7 +147,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
             commandCenter = MPRemoteCommandCenter.shared()
 
             // build now playing
-            let nowPlayingInfo = [MPMediaItemPropertyArtist: (streamLink == "http://almalakradio.out.airtime.pro:8000/almalakradio_a?_ga=2.259920074.1336436179.1510295339-974603170.1506885966") ? "Radio" : "Live", MPMediaItemPropertyTitle: " "]
+            let nowPlayingInfo = [MPMediaItemPropertyArtist: "AlMalak Radio" , MPMediaItemPropertyTitle: " "]
 
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
             

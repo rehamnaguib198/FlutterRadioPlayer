@@ -42,6 +42,8 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
 
+var wasPlaying = false
+
 class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
 
     private var logger = Logger.getLogger(StreamingCore::javaClass.name)
@@ -73,18 +75,21 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
     val afChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
             AudioManager.AUDIOFOCUS_LOSS -> {
+                wasPlaying = if (playbackStatus == PlaybackStatus.PLAYING) true else false
                 pause()
                 handler.postDelayed(delayedStopRunnable, TimeUnit.SECONDS.toMillis(30))
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                wasPlaying = if (playbackStatus == PlaybackStatus.PLAYING) true else false
                 pause()
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                wasPlaying = if (playbackStatus == PlaybackStatus.PLAYING) true else false
                 setVolume(0.1)
             }
             AudioManager.AUDIOFOCUS_GAIN -> {
                 setVolume(1.0)
-                play()
+                if (wasPlaying) play()
             }
         }
     }
@@ -224,6 +229,13 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
                         this@StreamingCore.audioManager!!.requestAudioFocus(this@StreamingCore.afChangeListener, AudioEffect.CONTENT_TYPE_MUSIC, 0);
                     }
                 }
+                if (playbackStatus == PlaybackStatus.PAUSED) {
+                    val prefs: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+                    prefs.edit().putBoolean("flutter.isPlaying", false).commit()
+                } else if (playbackStatus == PlaybackStatus.PLAYING) {
+                    val prefs: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+                    prefs.edit().putBoolean("flutter.isPlaying", true).commit()
+                }
                 logger.info("onPlayerStateChanged: $playbackStatus")
             }
 
@@ -250,49 +262,49 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
         }
 
         playerNotificationManager = PlayerNotificationManager.createWithNotificationChannel(
-                context,
-                playbackChannelId,
-                R.string.channel_name,
-                R.string.channel_description,
-                playbackNotificationId,
-                object : PlayerNotificationManager.MediaDescriptionAdapter {
+            context,
+            playbackChannelId,
+            R.string.channel_name,
+            R.string.channel_description,
+            playbackNotificationId,
+            object : PlayerNotificationManager.MediaDescriptionAdapter {
 
-                    override fun getCurrentContentTitle(player: Player): String {
-                        return appName
-                    }
-
-                    @Nullable
-                    override fun createCurrentContentIntent(player: Player): PendingIntent {
-                        var intent = Intent(this@StreamingCore, activity!!.javaClass)
-                        var contentPendingIntent = PendingIntent.getActivity(this@StreamingCore, 0, intent, 0);
-                        return contentPendingIntent;
-                    }
-
-                    @Nullable
-                    override fun getCurrentContentText(player: Player): String? {
-                        val parsedMetadata = IcyMetadata(currentMetadata)
-                        logger.info("ICY Metadata parsed, reading title")
-                        return parsedMetadata.get("title")
-                    }
-
-                    @Nullable
-                    override fun getCurrentLargeIcon(player: Player, callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
-                        return null // OS will use the application icon.
-                    }
-
-                },
-                object : PlayerNotificationManager.NotificationListener {
-                    override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
-                        logger.info("Notification Cancelled. Stopping player...")
-                        stop()
-                    }
-
-                    override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
-                        logger.info("Attaching player as a foreground notification...")
-                        startForeground(notificationId, notification)
-                    }
-
+                override fun getCurrentContentTitle(player: Player): String {
+                    return appName
                 }
+
+                @Nullable
+                override fun createCurrentContentIntent(player: Player): PendingIntent {
+                    var intent = Intent(this@StreamingCore, activity!!.javaClass)
+                    var contentPendingIntent = PendingIntent.getActivity(this@StreamingCore, 0, intent, 0);
+                    return contentPendingIntent;
+                }
+
+                @Nullable
+                override fun getCurrentContentText(player: Player): String? {
+                    val parsedMetadata = IcyMetadata(currentMetadata)
+                    logger.info("ICY Metadata parsed, reading title" + parsedMetadata.get("title"))
+                    return if (parsedMetadata.get("title") != "Airtime - offline") parsedMetadata.get("title") else ""
+                }
+
+                @Nullable
+                override fun getCurrentLargeIcon(player: Player, callback: PlayerNotificationManager.BitmapCallback): Bitmap? {
+                    return null // OS will use the application icon.
+                }
+
+            },
+            object : PlayerNotificationManager.NotificationListener {
+                override fun onNotificationCancelled(notificationId: Int, dismissedByUser: Boolean) {
+                    logger.info("Notification Cancelled. Stopping player...")
+                    stop()
+                }
+
+                override fun onNotificationPosted(notificationId: Int, notification: Notification, ongoing: Boolean) {
+                    logger.info("Attaching player as a foreground notification...")
+                    startForeground(notificationId, notification)
+                }
+
+            }
         )
 
         logger.info("Building Media Session and Player Notification.")
@@ -306,12 +318,12 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
                 override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
                     val parsedMetadata = IcyMetadata(currentMetadata)
                     return MediaDescriptionCompat.Builder()
-                            .setTitle(if (streamUrl == "http://almalakradio.out.airtime.pro:8000/almalakradio_a?_ga=2.259920074.1336436179.1510295339-974603170.1506885966") "Radio" else "Live")
-                            .setExtras(Bundle().apply {
-                                putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, " ")
-                                putString(MediaMetadataCompat.METADATA_KEY_ARTIST, " ")
-                            })
-                            .build()
+                        .setTitle("AlMalak Radio")
+                        .setExtras(Bundle().apply {
+                            putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, " ")
+                            putString(MediaMetadataCompat.METADATA_KEY_ARTIST, " ")
+                        })
+                        .build()
                 }
             })
             mediaSessionConnector?.setPlayer(player)
@@ -361,21 +373,28 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
         when (audioFocus) {
 
             AudioManager.AUDIOFOCUS_GAIN -> {
+                logger.info("ramy: audiofocus gained")
                 player?.volume = 0.8f
-                play()
+                if (wasPlaying) play()
             }
 
             AudioManager.AUDIOFOCUS_LOSS -> {
+                logger.info("ramy: audiofocus loss")
+                wasPlaying = if (playbackStatus == PlaybackStatus.PLAYING) true else false
                 pause()
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                logger.info("ramy: audiofocus loss transient")
+                wasPlaying = if (playbackStatus == PlaybackStatus.PLAYING) true else false
+
                 if (isPlaying()) {
                     pause()
                 }
             }
 
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                wasPlaying = if (playbackStatus == PlaybackStatus.PLAYING) true else false
                 if (isPlaying()) {
                     player?.volume = 0.1f
                 }
@@ -418,3 +437,4 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
     }
 
 }
+
