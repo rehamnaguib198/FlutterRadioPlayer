@@ -41,6 +41,7 @@ import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import android.support.v4.media.MediaDescriptionCompat
 import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
+import android.content.SharedPreferences
 
 var wasPlaying = false
 
