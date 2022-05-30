@@ -42,6 +42,8 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
 import android.content.SharedPreferences
+import com.google.android.exoplayer2.util.NotificationUtil
+import androidx.core.app.NotificationCompat
 
 var wasPlaying = false
 
@@ -261,12 +263,11 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
             localBroadcastManager.sendBroadcast(broadcastMetaDataIntent.putExtra("meta_data", currentMetadata))
             playerNotificationManager?.invalidate()
         }
-
-        playerNotificationManager = PlayerNotificationManager.createWithNotificationChannel(
-            context,
+        NotificationUtil.createNotificationChannel(
+            this, playbackChannelId, R.string.channel_name,
+            R.string.channel_description, NotificationUtil.IMPORTANCE_HIGH)
+        playerNotificationManager = PlayerNotificationManager(context,
             playbackChannelId,
-            R.string.channel_name,
-            R.string.channel_description,
             playbackNotificationId,
             object : PlayerNotificationManager.MediaDescriptionAdapter {
 
@@ -344,6 +345,7 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
         playerNotificationManager!!.setUsePlayPauseActions(true)
         playerNotificationManager!!.setUseNavigationActions(false)
         playerNotificationManager!!.setUseNavigationActionsInCompactView(false)
+        playerNotificationManager!!.setPriority(NotificationCompat.PRIORITY_MAX)
 
         playerNotificationManager!!.setPlayer(player)
         playerNotificationManager!!.setMediaSessionToken(mediaSession.sessionToken)
@@ -438,4 +440,3 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
     }
 
 }
-
