@@ -59,7 +59,8 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
         item.value(forKeyPath: "value")
         let song: String = (item.value(forKeyPath: "value")!) as! String
         pushEvent(typeEvent: "meta_data", eventName: song)
-        MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyTitle] = " ";
+        MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = song;
+        MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyTitle] = "Almalak radio";
       }
     }
 
@@ -135,20 +136,26 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
     @objc func timerAction() {
        pause()
     }
-    
+
     private func pushEvent(typeEvent : String = "status", eventName: String) {
         print("Pushing event: \(eventName)")
         NotificationCenter.default.post(name: Notifications.playbackNotification, object: nil, userInfo: [typeEvent: eventName])
     }
-    
+
     private func initRemoteTransportControl(appName: String, subTitle: String) {
-        
+
         do {
             commandCenter = MPRemoteCommandCenter.shared()
 
             // build now playing
-            let nowPlayingInfo = [MPMediaItemPropertyArtist: "AlMalak Radio" , MPMediaItemPropertyTitle: " "]
 
+            var image: MPMediaItemArtwork = MPMediaItemArtwork(image: UIImage(named:"radio_image")!)
+            if streamLink != "http://almalakradio.out.airtime.pro:8000/almalakradio_a?_ga=2.259920074.1336436179.1510295339-974603170.1506885966" {
+                image = MPMediaItemArtwork(image: UIImage(named:"live_image")!)
+            }
+            var nowPlayingInfo: [String : Any] = [MPMediaItemPropertyArtist: "" , MPMediaItemPropertyTitle: "Almalak radio",
+            MPMediaItemPropertyArtwork: image
+            ]
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
             
             // basic command center options
@@ -268,5 +275,3 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
     }
     
 }
-
-
