@@ -287,7 +287,7 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
                 override fun getCurrentContentText(player: Player): String? {
                     val parsedMetadata = IcyMetadata(currentMetadata)
                     logger.info("ICY Metadata parsed, reading title" + parsedMetadata.get("title"))
-                    return if (parsedMetadata.get("title") != "Airtime - offline") parsedMetadata.get("title").substring(0, parsedMetadata.get("title").lastIndexOf('.') else ""
+                    return if (parsedMetadata.get("title") != "Airtime - offline") parsedMetadata.get("title")?.substring(0, parsedMetadata.get("title")?.lastIndexOf('.')) else ""
                 }
 
                 @Nullable
@@ -324,8 +324,8 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
                         .setTitle("Almalak radio")
                         .setMediaUri(Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + context.resources.getResourcePackageName(if (streamUrl == "http://almalakradio.out.airtime.pro:8000/almalakradio_a?_ga=2.259920074.1336436179.1510295339-974603170.1506885966") R.drawable.radio_image else R.drawable.live_image) + '/' + context.resources.getResourceTypeName(if (streamUrl == "http://almalakradio.out.airtime.pro:8000/almalakradio_a?_ga=2.259920074.1336436179.1510295339-974603170.1506885966") R.drawable.radio_image else R.drawable.live_image) + '/' + context.resources.getResourceEntryName(if (streamUrl == "http://almalakradio.out.airtime.pro:8000/almalakradio_a?_ga=2.259920074.1336436179.1510295339-974603170.1506885966") R.drawable.radio_image else R.drawable.live_image)))
                         .setExtras(Bundle().apply {
-                            putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, if (parsedMetadata.get("title") != "Airtime - offline") parsedMetadata.get("title").substring(0, parsedMetadata.get("title").lastIndexOf('.') else "")
-                            putString(MediaMetadataCompat.METADATA_KEY_ARTIST, if (parsedMetadata.get("title") != "Airtime - offline") parsedMetadata.get("title").substring(0, parsedMetadata.get("title").lastIndexOf('.') else "")
+                            putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, if (parsedMetadata.get("title") != "Airtime - offline") parsedMetadata.get("title")?.substring(0, parsedMetadata.get("title")?.lastIndexOf('.')) else ""
+                            putString(MediaMetadataCompat.METADATA_KEY_ARTIST, if (parsedMetadata.get("title") != "Airtime - offline") parsedMetadata.get("title")?.substring(0, parsedMetadata.get("title")?.lastIndexOf('.')) else ""
                         })
                         .build()
                 }
