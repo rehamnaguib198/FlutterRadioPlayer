@@ -59,7 +59,12 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
         item.value(forKeyPath: "value")
         let song: String = (item.value(forKeyPath: "value")!) as! String
         pushEvent(typeEvent: "meta_data", eventName: song)
-        MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = song;
+        if song != "Airtime - offline" {
+            let separatorIndex = song.index(of: ".")!
+            MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = song[..<separatorIndex];
+        } else {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = "";
+        }
         MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyTitle] = "Almalak radio";
       }
     }
@@ -157,7 +162,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
             MPMediaItemPropertyArtwork: image
             ]
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-            
+
             // basic command center options
             commandCenter?.togglePlayPauseCommand.isEnabled = true
             commandCenter?.playCommand.isEnabled = true
@@ -173,49 +178,49 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
             commandCenter?.bookmarkCommand.isEnabled = false
             commandCenter?.changeRepeatModeCommand.isEnabled = false
             commandCenter?.changeShuffleModeCommand.isEnabled = false
-            
+
             // only available in iOS 9
             if #available(iOS 9.0, *) {
                 commandCenter?.enableLanguageOptionCommand.isEnabled = false
                 commandCenter?.disableLanguageOptionCommand.isEnabled = false
             }
-            
+
             // control center play button callback
             commandCenter?.playCommand.addTarget { (MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus in
                 print("command center play command...")
                 _ = self.play()
                 return .success
             }
-            
+
             // control center pause button callback
             commandCenter?.pauseCommand.addTarget { (MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus in
                 print("command center pause command...")
                 _ = self.pause()
                 return .success
             }
-            
+
             // control center stop button callback
             commandCenter?.stopCommand.addTarget { (MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus in
                 print("command center stop command...")
                 _ = self.stop()
                 return .success
             }
-            
+
             // create audio session for background playback and control center callbacks.
             let audioSession = AVAudioSession.sharedInstance()
-            
+
             if #available(iOS 10.0, *) {
                 try audioSession.setCategory(.playback, mode: .default, options: .defaultToSpeaker)
                 try audioSession.overrideOutputAudioPort(.speaker)
                 try audioSession.setActive(true)
             }
-            
+
             UIApplication.shared.beginReceivingRemoteControlEvents()
         } catch {
             print("Something went wrong ! \(error)")
         }
     }
-    
+
     private func initPlayerObservers() {
         print("Initializing player observers...")
         // Add observer for AVPlayer.Status and AVPlayerItem.currentItem
@@ -223,12 +228,12 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
         self.avPlayer?.addObserver(self, forKeyPath: #keyPath(AVPlayer.currentItem.status), options:[.new, .initial], context: nil)
         self.avPlayer?.addObserver(self, forKeyPath: #keyPath(AVPlayer.currentItem.isPlaybackBufferEmpty), options:[.new, .initial], context: nil)
     }
-    
+
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
-        
+
         if object is AVPlayer {
             switch keyPath {
-                
+
             case #keyPath(AVPlayer.currentItem.isPlaybackBufferEmpty):
                 let _: Bool
                 if let newStatusNumber = change?[NSKeyValueChangeKey.newKey] as? Bool {
@@ -237,7 +242,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
                         pushEvent(eventName: Constants.FLUTTER_RADIO_LOADING)
                     }
                 }
-                
+
             case #keyPath(AVPlayer.currentItem.status):
                 let newStatus: AVPlayerItem.Status
                 if let newStatusAsNumber = change?[NSKeyValueChangeKey.newKey] as? NSNumber {
@@ -245,7 +250,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
                 } else {
                     newStatus = .unknown
                 }
-                
+
                 if newStatus == .readyToPlay {
                     print("Observer: Ready to play...")
                     pushEvent(eventName: isPlaying()
@@ -255,7 +260,7 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
                         play()
                     }
                 }
-                
+
                 if newStatus == .failed {
                     print("Observer: Failed...")
                     pushEvent(eventName: Constants.FLUTTER_RADIO_ERROR)
@@ -273,5 +278,5 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
             }
         }
     }
-    
+
 }
