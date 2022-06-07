@@ -289,7 +289,7 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
                     var extensionIndex = if (parsedMetadata.get("title") != null) (parsedMetadata.get("title") as String).lastIndexOf('.') else -1
                     logger.info("ICY Metadata parsed, reading title" + parsedMetadata.get("title"))
                     return if (parsedMetadata.get("title") != null && parsedMetadata.get("title") != "Airtime - offline" && (parsedMetadata.get("title") as String).length > 0) parsedMetadata.get("title")
-                        ?.substring(0, if (extensionIndex != -1) extensionIndex else (parsedMetadata.get("title") as String).length - 1) else ""
+                        ?.substring(0, if (extensionIndex != -1) extensionIndex else (parsedMetadata.get("title") as String).length) else ""
                 }
 
                 @Nullable
@@ -339,10 +339,10 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
                             putString(
                                 MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
                                 if (parsedMetadata.get("title") != null && parsedMetadata.get("title") != "Airtime - offline" && (parsedMetadata.get("title") as String).length > 0) parsedMetadata.get("title")
-                                    ?.substring(0, if (extensionIndex != -1) extensionIndex else (parsedMetadata.get("title") as String).length - 1) else "")
+                                    ?.substring(0, if (extensionIndex != -1) extensionIndex else (parsedMetadata.get("title") as String).length) else "")
                             putString (MediaMetadataCompat.METADATA_KEY_ARTIST,
                                 if (parsedMetadata.get("title") != null && parsedMetadata.get("title") != "Airtime - offline" && (parsedMetadata.get("title") as String).length > 0) parsedMetadata.get("title")
-                                    ?.substring(0, if (extensionIndex != -1) extensionIndex else (parsedMetadata.get("title") as String).length - 1) else "")
+                                    ?.substring(0, if (extensionIndex != -1) extensionIndex else (parsedMetadata.get("title") as String).length) else "")
                         })
                         .build()
                 }

@@ -1,6 +1,6 @@
 name: almalak_radio_player
 description: Flutter radio plugin handles a single streaming audio preciously.
-version: 1.3.2
+version: 1.3.3
 homepage: https://github.com/rehamnaguib198/FlutterRadioPlayer
 
 environment:

@@ -60,8 +60,11 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
         let song: String = (item.value(forKeyPath: "value")!) as! String
         pushEvent(typeEvent: "meta_data", eventName: song)
         if song != "Airtime - offline" {
-            let separatorIndex = song.index(of: ".")!
-            MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = song[..<separatorIndex];
+            if let separatorIndex = song.lastIndex(of: ".") {
+                MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = song[..<separatorIndex];
+            } else {
+                MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = song;
+            }
         } else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = "";
         }
