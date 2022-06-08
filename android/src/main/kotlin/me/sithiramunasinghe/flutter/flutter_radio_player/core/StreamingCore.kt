@@ -134,6 +134,9 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
     }
 
     fun stop() {
+        val prefs: SharedPreferences = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("flutter.is_radio_initialized", false).commit()
+        prefs.edit().putBoolean("flutter.isPlaying", false).commit()
         logger.info("stopping audio $player ...")
         player?.stop()
         stopSelf()
@@ -458,3 +461,4 @@ class StreamingCore : Service(), AudioManager.OnAudioFocusChangeListener {
     }
 
 }
+
