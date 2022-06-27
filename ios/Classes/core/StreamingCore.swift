@@ -57,13 +57,23 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
       if let item = groups.first?.items.first // make this an AVMetadata item
       {
         item.value(forKeyPath: "value")
-        let song: String = (item.value(forKeyPath: "value")!) as! String
+        var song: String = (item.value(forKeyPath: "value")!) as! String
         pushEvent(typeEvent: "meta_data", eventName: song)
         if song != "Airtime - offline" {
+            let regex2 = try! NSRegularExpression(pattern: "[0-9]", options: [])
             if let separatorIndex = song.lastIndex(of: ".") {
-                MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = song[..<separatorIndex];
+                var songTitle = String(song[..<separatorIndex]);
+                if let range = songTitle.range(of: " - ", options: .regularExpression) {
+                    songTitle = songTitle.replacingCharacters(in: range, with: "")
+                }
+                let finalString = regex2.stringByReplacingMatches(in: songTitle, options: [], range: NSMakeRange(0, songTitle.count), withTemplate: "")
+                MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = finalString;
             } else {
-                MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = song;
+                if let range = song.range(of: " - ", options: .regularExpression) {
+                    song = song.replacingCharacters(in: range, with: "")
+                }
+                let finalString = regex2.stringByReplacingMatches(in: song, options: [], range: NSMakeRange(0, song.count), withTemplate: "")
+                MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = finalString;
             }
         } else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyArtist] = "";
@@ -157,9 +167,9 @@ class StreamingCore : NSObject, AVPlayerItemMetadataOutputPushDelegate {
 
             // build now playing
 
-            var image: MPMediaItemArtwork = MPMediaItemArtwork(image: UIImage(named:"radio_image")!)
+            var image: MPMediaItemArtwork = MPMediaItemArtwork(image: UIImage(named:"radio_notification_image")!)
             if streamLink != "http://almalakradio.out.airtime.pro:8000/almalakradio_a?_ga=2.259920074.1336436179.1510295339-974603170.1506885966" {
-                image = MPMediaItemArtwork(image: UIImage(named:"live_image")!)
+                image = MPMediaItemArtwork(image: UIImage(named:"live_notification_image")!)
             }
             var nowPlayingInfo: [String : Any] = [MPMediaItemPropertyArtist: "" , MPMediaItemPropertyTitle: "Almalak radio",
             MPMediaItemPropertyArtwork: image
